@@ -1,0 +1,84 @@
+# =========================
+# 🔐 Virtual Environment
+# =========================
+venv/
+.env/
+.env
+*.env
+
+# =========================
+# 🐍 Python
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.joblib
+
+# =========================
+# 🧠 ML Models & Artifacts
+# =========================
+models/saved/
+*.pt
+*.pth
+*.h5
+*.onnx
+
+# =========================
+# 📊 Data (VERY IMPORTANT)
+# =========================
+data/raw/
+data/processed/
+data/artifacts/
+
+# If you want to keep sample data:
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/artifacts/.gitkeep
+
+# =========================
+# 📈 Outputs
+# =========================
+outputs/
+logs/
+
+# =========================
+# 📓 Notebooks
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# 🧪 Testing / Coverage
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+# 🛠️ IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# 🖥️ OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# 📦 Build / Packaging
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# 🔥 Temporary Files
+# =========================
+*.log
+*.tmp
+*.bak
