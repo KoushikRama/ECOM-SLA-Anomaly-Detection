@@ -3,7 +3,9 @@
 
   "paths": {
     "model": "models/v2/model_bundle.pkl",
-    "data_config": "config/v2/data-config.json"
+    "data_config": "config/v2/data-config.json",
+    "model_config": "config/v2/model-config.json",
+    "threshold_config": "config/v2/threshold-config.json"
   },
 
   "data": {

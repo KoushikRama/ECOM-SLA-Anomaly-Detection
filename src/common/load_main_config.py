@@ -31,6 +31,26 @@ def load_data_config():
     with open(data_config_path, "r") as f:
         return json.load(f)
     
+def load_model_config():
+    main_config = load_main_config()
+    model_config_path = get_path("model_config", main_config)
+
+    if not Path(model_config_path).exists():
+        raise FileNotFoundError(f"Model config not found: {model_config_path}")
+
+    with open(model_config_path, "r") as f:
+        return json.load(f)
+    
+def load_threshold_config():
+    main_config = load_main_config()
+    threshold_config_path = get_path("threshold_config", main_config)
+
+    if not Path(threshold_config_path).exists():
+        raise FileNotFoundError(f"Threshold config not found: {threshold_config_path}")
+
+    with open(threshold_config_path, "r") as f:
+        return json.load(f)
+    
 def get_data_filepath(config=None):
     if config is None:
         config = load_main_config()
