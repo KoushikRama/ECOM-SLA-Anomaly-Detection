@@ -22,6 +22,19 @@ def load_bundle_parameters(bundle):
 
     return models, features, targets, thresholds
 
+# =========================================
+# HELPERS
+# =========================================
+
+def get_severity_label(severity):
+
+    if severity < 1.25:
+        return "Low"
+    elif severity < 2.5:
+        return "⚠️ Medium"
+    else:
+        return "🚨 Critical"
+
 
 # =========================================
 # MAIN INFERENCE
@@ -58,6 +71,7 @@ def run_inference(df):
         detected_anomaly = False
         max_severity = 0
         root_causes = []
+        Severity_Label = None
 
         preds = {}
 
@@ -82,7 +96,7 @@ def run_inference(df):
                 min_pct * pred
             )
 
-            deviation = 0
+            deviation = None
 
             # =========================
             # LATENCY
@@ -95,6 +109,7 @@ def run_inference(df):
 
                 deviation = actual - pred
                 if deviation <= 0:
+                    deviation = None
                     continue
 
             # =========================
@@ -117,14 +132,14 @@ def run_inference(df):
             # =========================
             # ABSOLUTE CHECK
             # =========================
-            if deviation > threshold_val:
+            if deviation is not None and deviation > threshold_val:
 
                 detected_anomaly = True
 
                 severity = deviation / (threshold_val + 1e-6)
                 root_causes.append((t, severity))
-
                 max_severity = max(max_severity, severity)
+                Severity_Label = get_severity_label(max_severity)
 
         # Sort root causes
         root_causes = sorted(root_causes, key=lambda x: x[1], reverse=True)
@@ -140,12 +155,13 @@ def run_inference(df):
 
             **preds,
 
-            "Status": "Anomaly 🚨" if detected_anomaly else "Normal ✅",
+            "Status": "Anomaly" if detected_anomaly else "Normal ✅",
 
             # ✅ SAFE ACCESS FIX
-            "Root_Cause": root_causes[0][0] if root_causes else None,
-            "All_Causes": root_causes if root_causes else None,
+            "Root_Cause": str(root_causes[0][0]) if root_causes else None,
+            "All_Causes": ", ".join([f"{k}:{v:.2f}" for k, v in root_causes]) if root_causes else None,
             "Severity": round(max_severity, 3),
+            "Severity_Label": Severity_Label,
 
             "is_anomaly": is_anomaly,
             "anomaly_type": anomaly_type
