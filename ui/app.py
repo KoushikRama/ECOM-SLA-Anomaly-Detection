@@ -11,10 +11,10 @@ from datetime import datetime
 import pandas as pd
 
 from src.data.generate_test_data import generate_test_data
-from src.xgboost.inference.infer import run_inference
 from src.common.load_main_config import load_data_config
 from src.xgboost.evaluation.evaluate import evaluate
 import requests
+from api_settings import FAST_API_URL, API_GATEWAY_SAGEMAKER_URL
 
 # =========================================
 # GRAPH FUNCTION (SEPARATE)
@@ -149,35 +149,55 @@ if run_button:
     payload["timestamp"] = payload["timestamp"].astype(str)
 
     if backend == "FastAPI":
-        API_URL = "http://localhost:8000/predict"
 
         response = requests.post(
-            API_URL,
+            FAST_API_URL,
             json=payload.to_dict(orient="records")
         )
 
     else:
         # SageMaker route (via API Gateway)
-        API_URL = "https://your-api-id.execute-api.us-east-1.amazonaws.com/prod/predict"
 
-        response = requests.post(
-            API_URL,
-            json={
-                "data": payload.to_dict(orient="records")
-            }
-        )
+        json_payload = payload.to_dict(orient="records")
 
-    if response.status_code != 200:
-        st.error("API failed")
+        st.write("📤 Sending Payload Preview:", json_payload[:2])  # debug
 
-    results = pd.DataFrame(response.json())
+        try:
+            response = requests.post(API_GATEWAY_SAGEMAKER_URL, json=json_payload)
+        except Exception as e:
+            st.error(f"❌ Request failed: {e}")
+            st.stop()
+
+        st.write("📥 Status Code:", response.status_code)
+
+        if response.status_code != 200:
+            st.error("❌ API Error")
+            st.write(response.text)
+            st.stop()
+
+    data = response.json()
+
+    st.write("📥 Raw Response:", data)  # debug
+
+    # safe parsing (same as test file)
+    if isinstance(data, dict):
+        data = [data]
+
+    results = pd.DataFrame(data)
+
+    st.write("📊 Columns:", results.columns.tolist())  # debug
 
     print(results.columns)
     print(results.head())
 
     st.success("Inference completed")
 
+    # align timestamps
     results["timestamp"] = df_test["timestamp"]
+
+    # 🔥 bring back ground truth labels from test data
+    results["is_anomaly"] = df_test["is_anomaly"].values
+    results["anomaly_type"] = df_test["anomaly_type"].values
 
     # store in session
     st.session_state.results = results
